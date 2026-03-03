@@ -1081,15 +1081,38 @@ function onUnconfirmedChange() {
 function populateStampSelect() {
   const sel    = document.getElementById('rec-stamp-board');
   const boards = getStampBoards();
+  const saved  = sel.value; // 수정 폼 열릴 때 기존 선택값 유지용
+
+  // 상태별 분류
+  const active  = boards.filter(b => !b.paused && b.currentCount < b.totalSlots);
+  const paused  = boards.filter(b =>  b.paused && b.currentCount < b.totalSlots);
+  const done    = boards.filter(b => b.currentCount >= b.totalSlots);
+
   sel.innerHTML = '<option value="">연동 안 함</option>';
-  boards.forEach(b => {
-    const o = document.createElement('option');
-    o.value = b.id;
-    const done = b.currentCount >= b.totalSlots;
-    o.textContent = `${b.name} (${b.currentCount}/${b.totalSlots})${done ? ' ✓완성' : ''}`;
-    if (done) o.style.color = 'var(--text3)';
-    sel.appendChild(o);
-  });
+
+  function addGroup(label, items, suffix, disabled) {
+    if (!items.length) return;
+    const grp = document.createElement('optgroup');
+    grp.label = label;
+    items.forEach(b => {
+      const o = document.createElement('option');
+      o.value = b.id;
+      o.textContent = `[📡 ${b.name}] (${b.currentCount}/${b.totalSlots})${suffix}`;
+      if (disabled) {
+        o.disabled = true;
+        o.style.color = 'var(--text3)';
+      }
+      grp.appendChild(o);
+    });
+    sel.appendChild(grp);
+  }
+
+  addGroup('진행중', active, '', false);
+  addGroup('일시정지 ⏸', paused, ' ⏸', true);
+  addGroup('완료 ✓', done, ' ✓', true);
+
+  // 기존 선택값 복원 (editRecord 시)
+  if (saved) sel.value = saved;
 }
 
 // ============================================================
