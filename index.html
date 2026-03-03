@@ -632,12 +632,19 @@
       <label class="form-label">할인권종 <span style="color:var(--text3);font-weight:400;">(선택)</span></label>
       <select class="form-control" id="rec-discount-type" onchange="onDiscountTypeChange()">
         <option value="">없음 (일반)</option>
-        <option value="프리뷰">프리뷰</option>
-        <option value="재관람">재관람</option>
+        <option value="프리뷰">프리뷰 (40%)</option>
+        <option value="2차 조기예매">2차 조기예매 (25%)</option>
+        <option value="재관람">재관람 (30%)</option>
+        <option value="직장인">직장인 (10%)</option>
+        <option value="예술인패스">예술인패스 (20%)</option>
+        <option value="마티네">마티네 (30%)</option>
+        <option value="청소년">청소년 (20~30%)</option>
+        <option value="창작산실 할인">창작산실 (30%)</option>
+        <option value="문화누리카드">문화누리카드 (50%)</option>
+        <option value="장애인/국가유공자">장애인/국가유공자</option>
         <option value="40% 할인권">40% 할인권</option>
         <option value="50% 할인권">50% 할인권</option>
         <option value="증빙 프리패스">증빙 프리패스</option>
-        <option value="창작산실 할인">창작산실 할인</option>
         <option value="타임세일">타임세일</option>
         <option value="기타">기타</option>
       </select>
@@ -1313,7 +1320,9 @@ function openDetail(id) {
         cumulative += hQty;
       }
       if (seq === null) seq = board.currentCount;
-      html += `<div class="detail-field"><div class="detail-field-label">교신일지 카드</div><div class="detail-field-value">[📡 ${board.name}] ${seq}번째 도장 (현재 ${board.currentCount}/${board.totalSlots}칸)</div></div>`;
+      const qty = r.stampQty || 1;
+      const seqLabel = qty > 1 ? `[${seq}~${seq+qty-1}번째 도장] ×${qty}` : `${seq}번째 도장`;
+      html += `<div class="detail-field"><div class="detail-field-label">교신일지 카드</div><div class="detail-field-value">[📡 ${board.name}] ${seqLabel}</div></div>`;
     }
   }
   if (r.memo) html += `<div class="detail-field"><div class="detail-field-label">감상 메모</div><div class="detail-field-value" style="font-size:14px;line-height:1.6;white-space:pre-wrap;">${r.memo}</div></div>`;
