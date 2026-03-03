@@ -318,9 +318,11 @@
   .home-stamp-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .home-stamp-row:last-child { border-bottom: none; }
   .home-stamp-name { font-size: 13px; font-weight: 600; min-width: 70px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .home-stamp-bar { flex: 2; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
-  .home-stamp-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s; }
-  .home-stamp-count { font-size: 12px; color: var(--text3); min-width: 40px; text-align: right; }
+  .home-stamp-bar { flex: 2; height: 6px; background: var(--bg3); border-radius: 3px; position: relative; }
+  .home-stamp-bar-fill { height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0; transition: width 0.4s; }
+  .home-stamp-bar-fill.scheduled { background: var(--border); }
+  .home-stamp-bar-fill.actual    { background: var(--accent); }
+  .home-stamp-count { font-size: 11px; color: var(--text3); min-width: 72px; text-align: right; white-space: nowrap; }
 
   .home-coupon-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .home-coupon-row:last-child { border-bottom: none; }
@@ -1459,11 +1461,16 @@ function renderHome() {
     ? `<div style="color:var(--text3);font-size:13px;text-align:center;padding:8px;">도장판이 없습니다</div>`
     : boards.map(b => {
         const { cur, final } = calcStampCounts(b);
-        const pct = Math.min(100, Math.round(cur/b.totalSlots*100));
+        const scheduledPct = Math.min(100, Math.round(final / b.totalSlots * 100));
+        const actualPct    = Math.min(100, Math.round(cur   / b.totalSlots * 100));
+        const done = cur >= b.totalSlots;
         return `<div class="home-stamp-row">
-          <div class="home-stamp-name">${cur>=b.totalSlots?'🎉 ':''}[📡 ${b.name}]</div>
-          <div class="home-stamp-bar"><div class="home-stamp-bar-fill" style="width:${pct}%"></div></div>
-          <div class="home-stamp-count">${cur}/${b.totalSlots}</div>
+          <div class="home-stamp-name">${done?'🎉 ':''}[📡 ${b.name}]</div>
+          <div class="home-stamp-bar">
+            <div class="home-stamp-bar-fill scheduled" style="width:${scheduledPct}%"></div>
+            <div class="home-stamp-bar-fill actual"    style="width:${actualPct}%"></div>
+          </div>
+          <div class="home-stamp-count">현재:${cur} / 예정:${final}</div>
         </div>`;
       }).join('');
 
