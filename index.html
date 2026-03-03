@@ -27,7 +27,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    font-family: 'Apple SD Gothic Neo', sans-serif;
     background: var(--bg); color: var(--text);
     max-width: 480px; margin: 0 auto; min-height: 100vh;
   }
@@ -1464,10 +1464,13 @@ function renderHome() {
   // 잔여: 오늘까지 기준 / 최종: 미달성 milestone 포함 전체
   function homeCouponFinal(key) {
     const cur = calcCouponCount(key, coupons, boards, records);
-    const future = boards.reduce((sum, b) =>
-      sum + (b.milestones||[]).filter(m =>
-        (m.couponKey||'discount50') === key && !m.notified
-      ).length, 0);
+    // 입력된 도장 총합(날짜 무관)이 milestone.at 이상인 경우만 future로 카운트
+    const future = boards.reduce((sum, b) => {
+      const totalEntered = (b.history||[]).reduce((t, h) => t + (h.qty||1), 0);
+      return sum + (b.milestones||[]).filter(m =>
+        (m.couponKey||'discount50') === key && !m.notified && totalEntered >= m.at
+      ).length;
+    }, 0);
     return cur + future;
   }
   const c40    = calcCouponCount('discount40',   coupons, boards, records, todayStr);
@@ -2084,8 +2087,11 @@ function deleteStampHistoryItemFromPanel(boardId, origIdx) {
   saveStampBoards(boards);
   if (h) {
     const records = getRecords();
-    const target = records.find(r => r.stampBoardId === boardId && r.date === h.date);
-    if (target) { target.stampBoardId = null; saveRecords(records); }
+    // recordId 우선 매칭, 없으면 date 폴백
+    const target = records.find(r =>
+      r.stampBoardId === boardId && (h.recordId ? r.id === h.recordId : r.date === h.date)
+    );
+    if (target) { target.stampBoardId = null; target.stampQty = null; saveRecords(records); }
   }
   renderStampBoards();
   renderCouponList();
@@ -2143,10 +2149,14 @@ function deleteStampHistoryItem(boardId, origIdx) {
   // 연동 record 해제
   if (h) {
     const records = getRecords();
-    const target = records.find(r => r.stampBoardId === boardId && r.date === h.date);
-    if (target) { target.stampBoardId = null; saveRecords(records); }
+    // recordId 우선 매칭, 없으면 date 폴백
+    const target = records.find(r =>
+      r.stampBoardId === boardId && (h.recordId ? r.id === h.recordId : r.date === h.date)
+    );
+    if (target) { target.stampBoardId = null; target.stampQty = null; saveRecords(records); }
   }
   renderStampBoards();
+  renderCouponList();
   renderHome();
   showToast('이력이 삭제되었습니다');
 }
@@ -2325,7 +2335,10 @@ function onDiscountTypeChange() {
   const couponKey = DISCOUNT_COUPON_MAP[val];
   if (couponKey) {
     const coupons = getCoupons();
-    warn.style.display = coupons[couponKey].count <= 0 ? '' : 'none';
+    const boards  = getStampBoards();
+    const records = getRecords();
+    const avail   = calcCouponCount(couponKey, coupons, boards, records);
+    warn.style.display = avail <= 0 ? '' : 'none';
   } else {
     warn.style.display = 'none';
   }
@@ -2372,7 +2385,6 @@ function saveCouponPack() {
   if (!date) { showToast('날짜를 입력해주세요'); return; }
   const coupons = getCoupons();
   ['discount40','discount50','discountPass'].forEach(key => {
-    coupons[key].count++;
     if (!coupons[key].history) coupons[key].history = [];
     coupons[key].history.push({ type:'획득', date, comment: comment || '쿠폰팩 획득' });
   });
@@ -2439,9 +2451,11 @@ function renderCouponList() {
   // 최종 = 날짜 제한 없이 전체 + 미달성 milestone
   function calcFinal(key) {
     const allUsed = calcCouponCount(key, coupons, boards, records);
+    // 입력된 도장 총합(날짜 무관)이 milestone.at 이상인 경우만 future로 카운트
     const future = boards.reduce((sum, b) => {
+      const totalEntered = (b.history||[]).reduce((t, h) => t + (h.qty||1), 0);
       return sum + (b.milestones || []).filter(m =>
-        (m.couponKey || 'discount50') === key && !m.notified
+        (m.couponKey || 'discount50') === key && !m.notified && totalEntered >= m.at
       ).length;
     }, 0);
     return allUsed + future;
