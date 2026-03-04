@@ -5,7 +5,6 @@ const BASE = '/roger2026';
 const PRECACHE_URLS = [
   BASE + '/',
   BASE + '/index.html',
-  BASE + '/roger_app.html',
   BASE + '/manifest.json',
 ];
 

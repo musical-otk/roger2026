@@ -11,16 +11,16 @@
 <meta name="apple-mobile-web-app-title" content="ROGER">
 <style>
   :root {
-    --bg: #f8f8f6; --bg2: #ffffff; --bg3: #f0f0ee;
-    --border: #e0e0dc; --text: #1a1a1a; --text2: #555550; --text3: #999990;
+    --bg: #f8f8f6; --bg1: #ffffff; --bg2: #ffffff; --bg3: #f0f0ee;
+    --border: #e0e0dc; --text: #1a1a1a; --text1: #1a1a1a; --text2: #555550; --text3: #999990;
     --accent: #2a5caa; --accent2: #1a3c7a; --accent-light: #e8eef8;
     --danger: #cc4444; --success: #2a8a4a; --star: #f0a020;
     --seat1: #dce8f8; --seat2: #a8c4ee; --seat3: #6a9ad8; --seat4: #3a6ab8; --seat5: #1a3a88;
     --shadow: 0 2px 12px rgba(0,0,0,0.08); --radius: 12px; --tab-h: 64px;
   }
   [data-theme="dark"] {
-    --bg: #111118; --bg2: #1a1a24; --bg3: #22222e;
-    --border: #333340; --text: #f0f0f0; --text2: #aaaaaa; --text3: #666670;
+    --bg: #111118; --bg1: #1a1a24; --bg2: #1a1a24; --bg3: #22222e;
+    --border: #333340; --text: #f0f0f0; --text1: #f0f0f0; --text2: #aaaaaa; --text3: #666670;
     --accent: #5a8cdd; --accent2: #7aacff; --accent-light: #1a2a44;
     --danger: #ee6666; --success: #44aa66;
     --shadow: 0 2px 12px rgba(0,0,0,0.4);
@@ -1207,8 +1207,7 @@ function saveRecord() {
     const boards = getStampBoards();
     const coupons = getCoupons();
     const available = calcCouponCount(newCouponKey, coupons, boards, records);
-    // 신규: 아직 이 record 없으므로 그대로 체크. 수정: 기존 쿠폰 반납분 고려
-    const effectiveAvailable = available + (prevCouponKey === newCouponKey ? 0 : prevCouponKey ? 0 : 0);
+    // 같은 쿠폰 유지 수정 시엔 체크 생략 (!(editId && same key))
     if (available <= 0 && !(editId && prevCouponKey === newCouponKey)) {
       showToast('현재 보유한 쿠폰이 없습니다');
       return;
@@ -1277,22 +1276,13 @@ function saveRecord() {
             });
             recalcStampCount(newBoard);
 
-            // 마일스톤 달성 시 할인권 적립
+            // 마일스톤 달성 시 notified 설정 (쿠폰 count는 calcCouponCount()가 m.notified로 동적 계산)
             if (!newBoard.milestones) newBoard.milestones = [{ at:3, reward:'50% 할인권', couponKey:'discount50', notified:false }];
-            const editCoupons = getCoupons();
-            let couponChanged = false;
             newBoard.milestones.forEach(m => {
               if (newBoard.currentCount >= m.at && !m.notified) {
                 m.notified = true;
-                if (m.couponKey) {
-                  if (!editCoupons[m.couponKey]) editCoupons[m.couponKey] = { history: [] };
-                  if (!editCoupons[m.couponKey].history) editCoupons[m.couponKey].history = [];
-                  editCoupons[m.couponKey].history.push({ type:'획득', date, comment: '[' + newBoard.name + '] ' + newBoard.totalSlots + '칸 달성' });
-                  couponChanged = true;
-                }
               }
             });
-            if (couponChanged) saveCoupons(editCoupons);
           }
         }
       }
@@ -1792,8 +1782,8 @@ function renderCalDayPanel(ds, daySch, doneSet, bookedSet, records) {
       const isDone   = doneSet.has(key);
       const isBooked = bookedSet.has(key);
       const rec      = dayRecords.find(r => r.time === s.time);
-      const badge    = isDone   ? '<span class="cal-session-badge done">✅</span>'
-                     : isBooked ? '<span class="cal-session-badge booked">✓ 예매확정</span>' : '';
+      const badge    = isBooked ? '<span class="cal-session-badge booked">✓ 예매확정</span>'
+                     : isDone   ? '<span class="cal-session-badge done">✅</span>' : '';
       const btn      = isDone
         ? `<button class="cal-session-add" onclick="openDetail('${rec?.id}')">상세</button>`
         : `<button class="cal-session-add" onclick="openAddRecordFromSchedule('${ds}','${s.time}','${s.skylar}','${s.didi}')">+ 기록</button>`;
@@ -1831,7 +1821,7 @@ function openAddRecordFromSchedule(date, time, skylar, didi) {
     if (skyEl) { skyEl.value = skylar; skyEl.dispatchEvent(new Event('change')); }
     const didiEl = document.getElementById('rec-didi');
     if (didiEl) { didiEl.value = didi; didiEl.dispatchEvent(new Event('change')); }
-  }, 80);
+  }, 0);
 }
 
 
