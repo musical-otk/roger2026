@@ -1078,10 +1078,10 @@ function onUnconfirmedChange() {
 // ============================================================
 // STAMP BOARD SELECT in RECORD FORM
 // ============================================================
-function populateStampSelect() {
+function populateStampSelect(keepBoardId) {
   const sel    = document.getElementById('rec-stamp-board');
   const boards = getStampBoards();
-  const saved  = sel.value; // 수정 폼 열릴 때 기존 선택값 유지용
+  const saved  = sel.value; // 새 도장판 추가 후 select 갱신 시 기존 선택값 유지용
 
   // 상태별 분류
   const active  = boards.filter(b => !b.paused && b.currentCount < b.totalSlots);
@@ -1098,7 +1098,8 @@ function populateStampSelect() {
       const o = document.createElement('option');
       o.value = b.id;
       o.textContent = `[📡 ${b.name}] (${b.currentCount}/${b.totalSlots})${suffix}`;
-      if (disabled) {
+      // 현재 기록에 연동된 도장판은 완료/일시정지 상태라도 선택 가능하게 유지
+      if (disabled && b.id !== keepBoardId) {
         o.disabled = true;
         o.style.color = 'var(--text3)';
       }
@@ -1111,8 +1112,9 @@ function populateStampSelect() {
   addGroup('일시정지 ⏸', paused, ' ⏸', true);
   addGroup('완료 ✓', done, ' ✓', true);
 
-  // 기존 선택값 복원 (editRecord 시)
-  if (saved) sel.value = saved;
+  // 선택값 복원: editRecord 전달값 우선, 없으면 기존 sel.value
+  if (keepBoardId) sel.value = keepBoardId;
+  else if (saved)  sel.value = saved;
 }
 
 // ============================================================
@@ -1165,9 +1167,8 @@ function editRecord(id) {
   // isBooked: true by default; unconfirmed = !isBooked
   // isBooked === false 이면 미정 (명시적 false 비교)
   document.getElementById('rec-unconfirmed').checked = r.isBooked === false;
-  populateStampSelect();
-  // 도장판 + 수량 복원
-  document.getElementById('rec-stamp-board').value = r.stampBoardId || '';
+  // keepBoardId 전달 → 완료/일시정지 상태라도 현재 연동 도장판 옵션을 선택 가능하게 유지
+  populateStampSelect(r.stampBoardId || null);
   onRecStampBoardChange();
   // 저장된 stampQty 복원 (폼이 1로 초기화된 채 저장되면 잘못된 stampChanged 발생 방지)
   if (r.stampBoardId && r.stampQty) {
