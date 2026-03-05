@@ -24,8 +24,9 @@
     --accent: #5a8cdd; --accent2: #7aacff; --accent-light: #1a2a44;
     --danger: #ee6666; --success: #44aa66;
     --shadow: 0 2px 12px rgba(0,0,0,0.4);
-    --seat1: #162840; --seat2: #1e3d5a; --seat3: #2a5280; --seat4: #3a6aaa; --seat5: #5a8cdd;
+    --seat1: #1a3570; --seat2: #1e52a0; --seat3: #2e70cc; --seat4: #4490e0; --seat5: #6ab0ff;
   }
+  [data-theme="dark"] .next-show-card { background: linear-gradient(135deg, #1a3a70 0%, #26508a 100%); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Apple SD Gothic Neo', sans-serif;
@@ -314,7 +315,7 @@
   .upcoming-item:last-child { border-bottom: none; }
   .upcoming-dday { font-size: 12px; font-weight: 700; color: var(--accent); min-width: 36px; }
   .upcoming-date { font-size: 12px; color: var(--text2); }
-  .upcoming-cast { font-size: 12px; color: var(--text3); white-space: nowrap; flex: 1; }
+  .upcoming-cast { font-size: 12px; color: var(--text3); white-space: nowrap; margin-left: auto; }
   .upcoming-seat { font-size: 11px; color: var(--text3); opacity: 0.75; white-space: nowrap; }
 
   .home-stamp-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
