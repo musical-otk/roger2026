@@ -1089,6 +1089,7 @@ function onUnconfirmedChange() {
 function populateStampSelect(keepBoardId) {
   const sel    = document.getElementById('rec-stamp-board');
   const boards = getStampBoards();
+  boards.forEach(b => recalcStampCount(b)); // 항상 이력 기준으로 재계산
   const saved  = sel.value; // 새 도장판 추가 후 select 갱신 시 기존 선택값 유지용
 
   // 상태별 분류
