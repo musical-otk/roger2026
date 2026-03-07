@@ -89,6 +89,9 @@
     font-size: 14px; outline: none; transition: border-color 0.2s;
   }
   .form-control:focus { border-color: var(--accent); }
+  @supports (-webkit-touch-callout: none) {
+    input[type="date"].form-control { height: 44px; }
+  }
   .form-row { display: flex; gap: 10px; }
   .form-row .form-group { flex: 1; }
   textarea.form-control { min-height: 80px; resize: vertical; }
@@ -113,9 +116,9 @@
   .toggle.on::after { transform: translateX(22px); }
 
   /* RECORD LIST */
-  .record-mini { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; gap: 10px; }
+  .record-mini { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); cursor: pointer; gap: 10px; }
   .record-mini:last-child { border-bottom: none; }
-  .record-date-badge { background: var(--accent-light); color: var(--accent); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 600; min-width: 60px; text-align: center; }
+  .record-date-badge { background: var(--accent-light); color: var(--accent); border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 600; min-width: 60px; text-align: center; }
   .record-casting { font-size: 13px; font-weight: 500; flex: 1; }
   .record-rating { color: var(--star); font-size: 12px; }
 
@@ -177,7 +180,8 @@
   .role-section-title { font-size: 12px; font-weight: 700; color: var(--text3); padding: 6px 8px 2px; }
 
   /* HEATMAP */
-  .heatmap-wrap { display: flex; gap: 4px; justify-content: center; overflow-x: auto; padding: 8px 0; }
+  .heatmap-scroll { overflow-x: auto; }
+  .heatmap-wrap { display: flex; gap: 4px; justify-content: center; padding: 8px 0; width: max-content; margin: 0 auto; }
   .zone-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
   .zone-label { font-size: 11px; font-weight: 700; color: var(--text3); }
   .seat-grid { display: flex; flex-direction: column; gap: 2px; }
@@ -490,7 +494,7 @@
   </div>
   <div class="card">
     <div class="card-title">💺 좌석 히트맵</div>
-    <div class="heatmap-wrap" id="heatmap"></div>
+    <div class="heatmap-scroll"><div class="heatmap-wrap" id="heatmap"></div></div>
     <div class="heatmap-legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--bg3);border:1px solid var(--border)"></div>0회</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--seat1)"></div>1회</div>
@@ -1530,7 +1534,7 @@ function renderHome() {
         const actualPct    = Math.min(100, Math.round(cur   / b.totalSlots * 100));
         const done = cur >= b.totalSlots;
         return `<div class="home-stamp-row">
-          <div class="home-stamp-name">${done?'🎉 ':''}[📡 ${b.name}]</div>
+          <div class="home-stamp-name">[📡 ${b.name}]${done?' 🎉':''}</div>
           <div class="home-stamp-bar">
             <div class="home-stamp-bar-fill scheduled" style="width:${scheduledPct}%"></div>
             <div class="home-stamp-bar-fill actual"    style="width:${actualPct}%"></div>
