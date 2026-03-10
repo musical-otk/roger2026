@@ -1,4 +1,4 @@
-const CACHE_NAME = 'roger2026-v41';
+const CACHE_NAME = 'roger2026-v42';
 const BASE = '/roger2026';
 
 // 앱 시작 시 캐시할 파일들
